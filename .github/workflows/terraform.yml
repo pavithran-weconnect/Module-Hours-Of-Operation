@@ -14,7 +14,7 @@ env:
   TF_IN_AUTOMATION: "true"
 
 concurrency:
-  group: terraform-dev
+  group: terraform-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -35,20 +35,29 @@ jobs:
         with:
           terraform_version: 1.7.5
 
-      # Always run against dev env folder; branch controls apply.
+      - name: Select environment directory
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/playground" ]; then
+            echo "TF_DIR=infra/envs/playground" >> $GITHUB_ENV
+          else
+            echo "TF_DIR=infra/envs/dev" >> $GITHUB_ENV
+          fi
+          echo "Using TF_DIR=${TF_DIR}"
+
       - name: Terraform Init
-        working-directory: infra/envs/dev
+        working-directory: ${{ env.TF_DIR }}
         run: terraform init
 
       - name: Terraform Validate
-        working-directory: infra/envs/dev
+        working-directory: ${{ env.TF_DIR }}
         run: terraform validate
 
       - name: Terraform Plan
-        working-directory: infra/envs/dev
+        working-directory: ${{ env.TF_DIR }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply (dev branch only)
         if: github.ref == 'refs/heads/dev'
-        working-directory: infra/envs/dev
+        working-directory: ${{ env.TF_DIR }}
         run: terraform apply -auto-approve tfplan
