@@ -1,0 +1,106 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "5ea6eefd-fff5-454e-a55c-291ff9ea1be3",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 40,
+      "y": 40
+    },
+    "ActionMetadata": {
+      "5ea6eefd-fff5-454e-a55c-291ff9ea1be3": {
+        "position": {
+          "x": 238.4,
+          "y": 39.2
+        },
+        "children": [
+          "5bc5b7db-2105-4388-b14f-1fd0900e9cfb_ClosedByOverride",
+          "a582322b-37d7-48e9-ae91-573da9c70299_OpenedByOverride"
+        ],
+        "parameters": {
+          "HoursOfOperationId": {
+            "displayName": "PM Hours"
+          }
+        }
+      },
+      "5bc5b7db-2105-4388-b14f-1fd0900e9cfb_ClosedByOverride": {
+        "position": {
+          "x": 499.2,
+          "y": 92.8
+        }
+      },
+      "a582322b-37d7-48e9-ae91-573da9c70299_OpenedByOverride": {
+        "position": {
+          "x": 499.2,
+          "y": -16.8
+        },
+        "children": [
+          "77c0fe56-ae48-4994-a650-4ae7a7ff1334"
+        ]
+      },
+      "77c0fe56-ae48-4994-a650-4ae7a7ff1334": {
+        "position": {
+          "x": 712,
+          "y": -11.2
+        }
+      }
+    }
+  },
+  "Actions": [
+    {
+      "Identifier": "CheckHoursOfOperation",
+      "Parameters": {
+        "HoursOfOperationId": "${hours_of_operation_arn}",
+        "CheckOverride": "True"
+      },
+      "Transitions": {
+        "Closed": "5bc5b7db-2105-4388-b14f-1fd0900e9cfb_ClosedByOverride",
+        "Open": "a582322b-37d7-48e9-ae91-573da9c70299_OpenedByOverride",
+        "Error": "a582322b-37d7-48e9-ae91-573da9c70299_OpenedByOverride"
+      }
+    },
+    {
+      "Identifier": "UpdateContactAttributes",
+      "Parameters": {
+        "Attributes": {
+          "HoursOfOperation": {
+            "Namespace": "External",
+            "Value": "$.HoursOfOperation.AppliedOverride"
+          }
+        },
+        "TargetContact": "Current"
+      },
+      "Transitions": {
+        "NextAction": "77c0fe56-ae48-4994-a650-4ae7a7ff1334",
+        "Errors": [
+          {
+            "NextAction": "77c0fe56-ae48-4994-a650-4ae7a7ff1334"
+          }
+        ]
+      }
+    },
+    {
+      "Identifier": "Compare",
+      "Parameters": {
+        "ComparisonValue": "$.HoursOfOperation.AppliedOverride",
+        "Operator": "Equals",
+        "Value": "New Years Day"
+      },
+      "Transitions": {
+        "NextAction": "77c0fe56-ae48-4994-a650-4ae7a7ff1334",
+        "Errors": [
+          {
+            "NextAction": "77c0fe56-ae48-4994-a650-4ae7a7ff1334"
+          }
+        ],
+        "Conditions": []
+      }
+    }
+  ],
+  "Settings": {
+    "InputParameters": [],
+    "OutputParameters": [],
+    "Transitions": [],
+    "ErrorTransitions": [],
+    "EndAction": ""
+  }
+}

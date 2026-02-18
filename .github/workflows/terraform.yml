@@ -1,0 +1,54 @@
+name: terraform
+
+on:
+  push:
+    branches: [ playground, dev ]
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  TF_IN_AUTOMATION: "true"
+
+concurrency:
+  group: terraform-dev
+  cancel-in-progress: false
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::007660001995:role/GitHubTerraformRole
+          aws-region: eu-west-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      # Always run against dev env folder; branch controls apply.
+      - name: Terraform Init
+        working-directory: infra/envs/dev
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: infra/envs/dev
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: infra/envs/dev
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply (dev branch only)
+        if: github.ref == 'refs/heads/dev'
+        working-directory: infra/envs/dev
+        run: terraform apply -auto-approve tfplan
