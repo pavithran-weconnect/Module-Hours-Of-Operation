@@ -1,6 +1,6 @@
-variable "instance_id" {
+variable "instance_arn" {
   type        = string
-  description = "Amazon Connect instance id"
+  description = "Amazon Connect instance ARN"
 }
 
 variable "name" {
@@ -30,8 +30,22 @@ variable "config" {
   description = "Weekly schedule config"
 }
 
-variable "tags" {
-  type        = map(string)
-  description = "Tags (also applied by provider default_tags; kept for future extension)"
+# Overrides embedded via AWSCC resource
+variable "overrides" {
+  type = map(object({
+    override_description = optional(string)
+    effective_from       = string # YYYY-MM-DD
+    effective_till       = string # YYYY-MM-DD
+    override_type        = string
+
+    override_config = optional(list(object({
+      day           = string
+      start_hours   = number
+      start_minutes = number
+      end_hours     = number
+      end_minutes   = number
+    })))
+  }))
+  description = "Map of override name -> override definition"
   default     = {}
 }
