@@ -34,13 +34,10 @@ variable "config" {
 variable "overrides" {
   type = map(object({
     override_description = optional(string)
-    effective_from       = string
-    effective_till       = string
+    effective_from       = string # YYYY-MM-DD
+    effective_till       = string # YYYY-MM-DD
+    override_type        = string
 
-    # Typical values: "CLOSED" or "OPENED" (use what Connect expects)
-    override_type = string
-
-    # Only needed for OPENED-type overrides
     override_config = optional(list(object({
       day           = string
       start_hours   = number

@@ -81,58 +81,47 @@ variable "hours_of_operation_overrides" {
   description = "Map of override name -> override settings"
 
   default = {
-    "New Years Day" = {
-      override_description = "Closed - New Years Day"
-      effective_from       = "2026-01-01T00:00:00Z"
-      effective_till       = "2026-01-02T00:00:00Z"
-      override_type        = "CLOSED"
-    }
-
-    "Good Friday" = {
-      override_description = "Closed - Good Friday"
-      effective_from       = "2026-04-03T00:00:00Z"
-      effective_till       = "2026-04-04T00:00:00Z"
-      override_type        = "CLOSED"
-    }
-
-    "Easter Monday" = {
-      override_description = "Closed - Easter Monday"
-      effective_from       = "2026-04-06T00:00:00Z"
-      effective_till       = "2026-04-07T00:00:00Z"
+    "Boxing Day" = {
+      override_description = "Closed - Boxing Day"
+      effective_from       = "2026-12-26"
+      effective_till       = "2026-12-27"
       override_type        = "CLOSED"
     }
 
     "Christmas Day" = {
       override_description = "Closed - Christmas Day"
-      effective_from       = "2026-12-25T00:00:00Z"
-      effective_till       = "2026-12-26T00:00:00Z"
+      effective_from       = "2026-12-25"
+      effective_till       = "2026-12-26"
       override_type        = "CLOSED"
     }
 
-    "Boxing Day" = {
-      override_description = "Closed - Boxing Day"
-      effective_from       = "2026-12-26T00:00:00Z"
-      effective_till       = "2026-12-27T00:00:00Z"
+    "Easter Monday" = {
+      override_description = "Closed - Easter Monday"
+      effective_from       = "2026-04-06"
+      effective_till       = "2026-04-07"
+      override_type        = "CLOSED"
+    }
+
+    "Good Friday" = {
+      override_description = "Closed - Good Friday"
+      effective_from       = "2026-04-03"
+      effective_till       = "2026-04-04"
+      override_type        = "CLOSED"
+    }
+
+    "New Years Day" = {
+      override_description = "Closed - New Years Day"
+      effective_from       = "2026-01-01"
+      effective_till       = "2026-01-02"
       override_type        = "CLOSED"
     }
 
     "Maintenance" = {
       override_description = "Closed - Maintenance window (placeholder)"
-      effective_from       = "2026-02-16T00:00:00Z"
-      effective_till       = "2031-12-31T00:00:00Z"
+      effective_from       = "2026-02-16"
+      effective_till       = "2031-12-31"
       override_type        = "CLOSED"
     }
-
-    # Example OPENED override:
-    # "Late Open and Late Close" = {
-    #   override_description = "Extended hours"
-    #   effective_from       = "2026-02-20T00:00:00Z"
-    #   effective_till       = "2026-02-21T00:00:00Z"
-    #   override_type        = "OPENED"
-    #   override_config = [
-    #     { day = "FRIDAY", start_hours = 8, start_minutes = 0, end_hours = 20, end_minutes = 0 }
-    #   ]
-    # }
   }
 }
 

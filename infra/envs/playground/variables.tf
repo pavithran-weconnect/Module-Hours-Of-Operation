@@ -1,7 +1,7 @@
 variable "environment" {
   type        = string
   description = "Environment name"
-  default     = "playground"
+  default     = "dev"
 }
 
 variable "aws_region" {
@@ -22,10 +22,13 @@ variable "tags" {
   default = {
     Project     = "Module-Hours-Of-Operation"
     ManagedBy   = "Terraform"
-    Environment = "playground"
+    Environment = "dev"
   }
 }
 
+# -------------------------
+# Hours of Operation inputs
+# -------------------------
 variable "hours_of_operation" {
   type = object({
     name        = string
@@ -41,10 +44,9 @@ variable "hours_of_operation" {
   })
 
   description = "Hours of Operation definition"
-
   default = {
     name        = "PM Hours"
-    description = "PM hours - playground plan only"
+    description = "PM hours - managed by Terraform"
     time_zone   = "Europe/London"
     config = [
       { day = "MONDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
@@ -56,12 +58,17 @@ variable "hours_of_operation" {
   }
 }
 
+# -------------------------
+# Overrides embedded into AWSCC Hours resource
+# override_type is typically "CLOSED" or "OPENED" (use what Connect expects)
+# -------------------------
 variable "hours_of_operation_overrides" {
   type = map(object({
     override_description = optional(string)
     effective_from       = string
     effective_till       = string
     override_type        = string
+
     override_config = optional(list(object({
       day           = string
       start_hours   = number
@@ -74,15 +81,54 @@ variable "hours_of_operation_overrides" {
   description = "Map of override name -> override settings"
 
   default = {
+    "Boxing Day" = {
+      override_description = "Closed - Boxing Day"
+      effective_from       = "2026-12-26"
+      effective_till       = "2026-12-27"
+      override_type        = "CLOSED"
+    }
+
+    "Christmas Day" = {
+      override_description = "Closed - Christmas Day"
+      effective_from       = "2026-12-25"
+      effective_till       = "2026-12-26"
+      override_type        = "CLOSED"
+    }
+
+    "Easter Monday" = {
+      override_description = "Closed - Easter Monday"
+      effective_from       = "2026-04-06"
+      effective_till       = "2026-04-07"
+      override_type        = "CLOSED"
+    }
+
+    "Good Friday" = {
+      override_description = "Closed - Good Friday"
+      effective_from       = "2026-04-03"
+      effective_till       = "2026-04-04"
+      override_type        = "CLOSED"
+    }
+
+    "New Years Day" = {
+      override_description = "Closed - New Years Day"
+      effective_from       = "2026-01-01"
+      effective_till       = "2026-01-02"
+      override_type        = "CLOSED"
+    }
+
     "Maintenance" = {
       override_description = "Closed - Maintenance window (placeholder)"
-      effective_from       = "2026-02-16T00:00:00Z"
-      effective_till       = "2031-12-31T00:00:00Z"
+      effective_from       = "2026-02-16"
+      effective_till       = "2031-12-31"
       override_type        = "CLOSED"
     }
   }
 }
 
+# -------------------------
+# Flow modules to deploy
+# hoo_key must match the key used in main.tf map: "pm_hours"
+# -------------------------
 variable "flow_modules" {
   type = map(object({
     name        = string
@@ -96,7 +142,7 @@ variable "flow_modules" {
   default = {
     pm_hours_module = {
       name        = "PM Hours Module"
-      description = "PM Hours module - playground plan only"
+      description = "PM Hours module - managed by Terraform"
       file_path   = "../../../assets/connect/flow-modules/pm-hours-module.json"
       hoo_key     = "pm_hours"
     }
