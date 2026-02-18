@@ -5,3 +5,7 @@ provider "aws" {
     tags = var.tags
   }
 }
+
+provider "awscc" {
+  region = var.aws_region
+}
