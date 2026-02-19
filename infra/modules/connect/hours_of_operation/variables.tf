@@ -48,23 +48,14 @@ variable "config" {
   }
 }
 
-# Overrides embedded via AWSCC resource
-#
-# IMPORTANT:
-# - effective_from/effective_till MUST be YYYY-MM-DD (no time)
-# - For timing: use override_config (it represents the time window for the override type)
-# - recurrence is optional; when provided, it maps to AWSCC recurrence_config.recurrence_pattern.*
-#
 variable "overrides" {
   type = map(object({
     override_description = optional(string)
     effective_from       = string # YYYY-MM-DD
     effective_till       = string # YYYY-MM-DD
 
-    # Use Connect schema values: typically "CLOSED" or "OPENED"
     override_type = string
 
-    # Optional time windows. If omitted, module will send [] (AWSCC requires configured)
     override_config = optional(list(object({
       day           = string
       start_hours   = number
@@ -75,10 +66,10 @@ variable "overrides" {
 
     # Optional recurrence support
     recurrence = optional(object({
-      frequency             = string           # WEEKLY | MONTHLY | YEARLY
-      interval              = optional(number) # default 1
-      by_month              = optional(list(number)) # 1-12
-      by_month_day          = optional(list(number)) # -1..31 (per AWSCC docs)
+      frequency             = string           
+      interval              = optional(number) 
+      by_month              = optional(list(number)) 
+      by_month_day          = optional(list(number))
       by_weekday_occurrence = optional(list(number))
     }))
   }))

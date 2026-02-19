@@ -26,9 +26,6 @@ variable "tags" {
   }
 }
 
-# -------------------------
-# Hours of Operation inputs
-# -------------------------
 variable "hours_of_operation" {
   type = object({
     name        = string
@@ -58,12 +55,6 @@ variable "hours_of_operation" {
   }
 }
 
-# -------------------------
-# Overrides (AWSCC embedded)
-# effective_* must be YYYY-MM-DD (no time)
-# Timing goes into override_config.
-# Recurrence supported via recurrence block.
-# -------------------------
 variable "hours_of_operation_overrides" {
   type = map(object({
     override_description = optional(string)
@@ -186,10 +177,6 @@ variable "hours_of_operation_overrides" {
   }
 }
 
-# -------------------------
-# Flow modules to deploy
-# hoo_key must match main.tf map: "pm_hours"
-# -------------------------
 variable "flow_modules" {
   type = map(object({
     name        = string

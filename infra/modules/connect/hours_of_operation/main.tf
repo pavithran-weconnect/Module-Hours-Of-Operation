@@ -1,5 +1,4 @@
 locals {
-  # Convert tags map to AWSCC tags schema: set of { key, value }
   awscc_tags = [
     for k, v in var.tags : {
       key   = k
@@ -27,11 +26,9 @@ locals {
       override_description = try(ov.override_description, null)
       override_type        = upper(ov.override_type)
 
-      # AWSCC requires date-only strings (YYYY-MM-DD)
       effective_from = ov.effective_from
       effective_till = ov.effective_till
 
-      # AWSCC error "value must be configured" → always provide [] when missing
       override_config = (
         try(ov.override_config, null) == null
         ? []
@@ -50,7 +47,6 @@ locals {
           ]
       )
 
-      # Optional recurrence support
       recurrence_config = (
         try(ov.recurrence, null) == null
         ? null
@@ -76,9 +72,7 @@ resource "awscc_connect_hours_of_operation" "this" {
 
   config = local.base_config
 
-  # Overrides list (can be empty)
   hours_of_operation_overrides = local.overrides
 
-  # Tags (optional)
   tags = local.awscc_tags
 }
