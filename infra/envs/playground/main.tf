@@ -12,6 +12,7 @@ module "hours_of_operation" {
   config      = var.hours_of_operation.config
 
   overrides = var.hours_of_operation_overrides
+  tags      = var.tags
 }
 
 module "flow_modules" {
@@ -23,8 +24,7 @@ module "flow_modules" {
   }
 
   flow_modules = var.flow_modules
-
-  tags = var.tags
+  tags         = var.tags
 }
 
 output "connect_instance_id" {

@@ -12,6 +12,7 @@ module "hours_of_operation" {
   config      = var.hours_of_operation.config
 
   overrides = var.hours_of_operation_overrides
+  tags      = var.tags
 }
 
 module "flow_modules" {
@@ -29,4 +30,12 @@ module "flow_modules" {
 
 output "connect_instance_id" {
   value = data.aws_connect_instance.this.id
+}
+
+output "hours_of_operation_id" {
+  value = module.hours_of_operation.id
+}
+
+output "flow_module_ids" {
+  value = module.flow_modules.flow_module_ids
 }

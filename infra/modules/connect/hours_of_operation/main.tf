@@ -1,4 +1,12 @@
 locals {
+  # Convert tags map to AWSCC tags schema: set of { key, value }
+  awscc_tags = [
+    for k, v in var.tags : {
+      key   = k
+      value = v
+    }
+  ]
+
   base_config = [
     for c in var.config : {
       day = c.day
@@ -17,14 +25,13 @@ locals {
     for ov_name, ov in var.overrides : {
       override_name        = ov_name
       override_description = try(ov.override_description, null)
-      override_type        = ov.override_type
+      override_type        = upper(ov.override_type)
 
-      # AWSCC expects date-only strings (YYYY-MM-DD)
+      # AWSCC requires date-only strings (YYYY-MM-DD)
       effective_from = ov.effective_from
       effective_till = ov.effective_till
 
-      # AWSCC complains if override_config is not configured.
-      # So we always send [] when it is not provided.
+      # AWSCC error "value must be configured" → always provide [] when missing
       override_config = (
         try(ov.override_config, null) == null
         ? []
@@ -43,16 +50,16 @@ locals {
           ]
       )
 
-      # Optional recurrence support (maps to AWSCC recurrence_config)
+      # Optional recurrence support
       recurrence_config = (
         try(ov.recurrence, null) == null
         ? null
         : {
             recurrence_pattern = {
-              frequency            = ov.recurrence.frequency
-              interval             = try(ov.recurrence.interval, 1)
-              by_month             = try(ov.recurrence.by_month, null)
-              by_month_day         = try(ov.recurrence.by_month_day, null)
+              frequency             = upper(ov.recurrence.frequency)
+              interval              = try(ov.recurrence.interval, 1)
+              by_month              = try(ov.recurrence.by_month, null)
+              by_month_day          = try(ov.recurrence.by_month_day, null)
               by_weekday_occurrence = try(ov.recurrence.by_weekday_occurrence, null)
             }
           }
@@ -69,5 +76,9 @@ resource "awscc_connect_hours_of_operation" "this" {
 
   config = local.base_config
 
+  # Overrides list (can be empty)
   hours_of_operation_overrides = local.overrides
+
+  # Tags (optional)
+  tags = local.awscc_tags
 }

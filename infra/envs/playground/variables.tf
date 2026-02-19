@@ -1,7 +1,7 @@
 variable "environment" {
   type        = string
   description = "Environment name"
-  default     = "dev"
+  default     = "playground"
 }
 
 variable "aws_region" {
@@ -18,17 +18,14 @@ variable "connect_instance_alias" {
 
 variable "tags" {
   type        = map(string)
-  description = "Default tags applied to all resources (via provider default_tags)"
+  description = "Default tags applied to all resources (provider default_tags + AWSCC tags in module)"
   default = {
     Project     = "Module-Hours-Of-Operation"
     ManagedBy   = "Terraform"
-    Environment = "dev"
+    Environment = "playground"
   }
 }
 
-# -------------------------
-# Hours of Operation inputs
-# -------------------------
 variable "hours_of_operation" {
   type = object({
     name        = string
@@ -46,7 +43,7 @@ variable "hours_of_operation" {
   description = "Hours of Operation definition"
   default = {
     name        = "PM Hours"
-    description = "PM hours - managed by Terraform"
+    description = "PM hours - playground plan only"
     time_zone   = "Europe/London"
     config = [
       { day = "MONDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
@@ -58,10 +55,6 @@ variable "hours_of_operation" {
   }
 }
 
-# -------------------------
-# Overrides embedded into AWSCC Hours resource
-# override_type is typically "CLOSED" or "OPENED" (use what Connect expects)
-# -------------------------
 variable "hours_of_operation_overrides" {
   type = map(object({
     override_description = optional(string)
@@ -78,15 +71,15 @@ variable "hours_of_operation_overrides" {
     })))
 
     recurrence = optional(object({
-      frequency            = string
-      interval             = optional(number)
-      by_month             = optional(list(number))
-      by_month_day         = optional(list(number))
+      frequency             = string
+      interval              = optional(number)
+      by_month              = optional(list(number))
+      by_month_day          = optional(list(number))
       by_weekday_occurrence = optional(list(number))
     }))
   }))
 
-  description = "Map of override name -> override settings (supports timing + recurrence)"
+  description = "Overrides examples for playground"
   default = {
     "Weekly Recurring Closed Window" = {
       override_description = "Recurring closed window 09:00-17:00 weekly"
@@ -94,24 +87,25 @@ variable "hours_of_operation_overrides" {
       effective_till       = "2026-12-31"
       override_type        = "CLOSED"
       override_config = [
-        { day = "MONDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
-        { day = "TUESDAY",   start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
-        { day = "WEDNESDAY", start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
-        { day = "THURSDAY",  start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
-        { day = "FRIDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 }
+        { day = "MONDAY",  start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
+        { day = "TUESDAY", start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 }
       ]
       recurrence = {
         frequency = "WEEKLY"
         interval  = 1
       }
     }
+
+    "Maintenance Window" = {
+      override_description = "Closed - Maintenance"
+      effective_from       = "2026-02-16"
+      effective_till       = "2026-02-20"
+      override_type        = "CLOSED"
+      override_config      = []
+    }
   }
 }
 
-# -------------------------
-# Flow modules to deploy
-# hoo_key must match the key used in main.tf map: "pm_hours"
-# -------------------------
 variable "flow_modules" {
   type = map(object({
     name        = string
@@ -120,12 +114,11 @@ variable "flow_modules" {
     hoo_key     = string
   }))
 
-  description = "Map of flow module key -> flow module settings (+ hoo_key)"
-
+  description = "Flow modules map (+ hoo_key)"
   default = {
     pm_hours_module = {
       name        = "PM Hours Module"
-      description = "PM Hours module - managed by Terraform"
+      description = "PM Hours module - playground plan only"
       file_path   = "../../../assets/connect/flow-modules/pm-hours-module.json"
       hoo_key     = "pm_hours"
     }
