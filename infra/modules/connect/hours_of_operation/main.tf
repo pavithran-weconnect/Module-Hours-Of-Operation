@@ -1,22 +1,13 @@
 locals {
   awscc_tags = [
-    for k, v in var.tags : {
-      key   = k
-      value = v
-    }
+    for k, v in var.tags : { key = k, value = v }
   ]
 
   base_config = [
     for c in var.config : {
       day = c.day
-      start_time = {
-        hours   = c.start_hours
-        minutes = c.start_minutes
-      }
-      end_time = {
-        hours   = c.end_hours
-        minutes = c.end_minutes
-      }
+      start_time = { hours = c.start_hours, minutes = c.start_minutes }
+      end_time   = { hours = c.end_hours,   minutes = c.end_minutes }
     }
   ]
 
@@ -29,24 +20,17 @@ locals {
       effective_from = ov.effective_from
       effective_till = ov.effective_till
 
-      override_config = (
-        try(ov.override_config, null) == null
-        ? []
-        : [
-            for oc in ov.override_config : {
-              day = oc.day
-              start_time = {
-                hours   = oc.start_hours
-                minutes = oc.start_minutes
-              }
-              end_time = {
-                hours   = oc.end_hours
-                minutes = oc.end_minutes
-              }
-            }
-          ]
-      )
+      # CRITICAL: Cloud Control requires OverrideConfig key to exist.
+      # Always send [] when not provided.
+      override_config = [
+        for oc in try(ov.override_config, []) : {
+          day = oc.day
+          start_time = { hours = oc.start_hours, minutes = oc.start_minutes }
+          end_time   = { hours = oc.end_hours,   minutes = oc.end_minutes }
+        }
+      ]
 
+      # Optional recurrence
       recurrence_config = (
         try(ov.recurrence, null) == null
         ? null
