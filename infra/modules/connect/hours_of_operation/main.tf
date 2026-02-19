@@ -1,5 +1,4 @@
 locals {
-  # Build the base weekly config
   base_config = [
     for c in var.config : {
       day = c.day
@@ -14,18 +13,18 @@ locals {
     }
   ]
 
-  # Build overrides. AWSCC expects:
-  # - effective_from / effective_till as YYYY-MM-DD
-  # - override_config must be configured (use [] when not needed)
   overrides = [
     for ov_name, ov in var.overrides : {
       override_name        = ov_name
       override_description = try(ov.override_description, null)
       override_type        = ov.override_type
 
+      # AWSCC expects date-only strings (YYYY-MM-DD)
       effective_from = ov.effective_from
       effective_till = ov.effective_till
 
+      # AWSCC complains if override_config is not configured.
+      # So we always send [] when it is not provided.
       override_config = (
         try(ov.override_config, null) == null
         ? []
@@ -43,6 +42,21 @@ locals {
             }
           ]
       )
+
+      # Optional recurrence support (maps to AWSCC recurrence_config)
+      recurrence_config = (
+        try(ov.recurrence, null) == null
+        ? null
+        : {
+            recurrence_pattern = {
+              frequency            = ov.recurrence.frequency
+              interval             = try(ov.recurrence.interval, 1)
+              by_month             = try(ov.recurrence.by_month, null)
+              by_month_day         = try(ov.recurrence.by_month_day, null)
+              by_weekday_occurrence = try(ov.recurrence.by_weekday_occurrence, null)
+            }
+          }
+      )
     }
   ]
 }
@@ -55,6 +69,5 @@ resource "awscc_connect_hours_of_operation" "this" {
 
   config = local.base_config
 
-  # Always provide a list (can be empty)
   hours_of_operation_overrides = local.overrides
 }

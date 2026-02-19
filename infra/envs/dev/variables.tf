@@ -76,54 +76,38 @@ variable "hours_of_operation_overrides" {
       end_hours     = number
       end_minutes   = number
     })))
+
+    recurrence = optional(object({
+      frequency            = string
+      interval             = optional(number)
+      by_month             = optional(list(number))
+      by_month_day         = optional(list(number))
+      by_weekday_occurrence = optional(list(number))
+    }))
   }))
 
-  description = "Map of override name -> override settings"
-
+  description = "Map of override name -> override settings (supports timing + recurrence)"
   default = {
-    "Boxing Day" = {
-      override_description = "Closed - Boxing Day"
-      effective_from       = "2026-12-26"
-      effective_till       = "2026-12-27"
-      override_type        = "CLOSED"
-    }
-
-    "Christmas Day" = {
-      override_description = "Closed - Christmas Day"
-      effective_from       = "2026-12-25"
-      effective_till       = "2026-12-26"
-      override_type        = "CLOSED"
-    }
-
-    "Easter Monday" = {
-      override_description = "Closed - Easter Monday"
-      effective_from       = "2026-04-06"
-      effective_till       = "2026-04-07"
-      override_type        = "CLOSED"
-    }
-
-    "Good Friday" = {
-      override_description = "Closed - Good Friday"
-      effective_from       = "2026-04-03"
-      effective_till       = "2026-04-04"
-      override_type        = "CLOSED"
-    }
-
-    "New Years Day" = {
-      override_description = "Closed - New Years Day"
+    "Weekly Recurring Closed Window" = {
+      override_description = "Recurring closed window 09:00-17:00 weekly"
       effective_from       = "2026-01-01"
-      effective_till       = "2026-01-02"
+      effective_till       = "2026-12-31"
       override_type        = "CLOSED"
-    }
-
-    "Maintenance" = {
-      override_description = "Closed - Maintenance window (placeholder)"
-      effective_from       = "2026-02-16"
-      effective_till       = "2031-12-31"
-      override_type        = "CLOSED"
+      override_config = [
+        { day = "MONDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
+        { day = "TUESDAY",   start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
+        { day = "WEDNESDAY", start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
+        { day = "THURSDAY",  start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
+        { day = "FRIDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 }
+      ]
+      recurrence = {
+        frequency = "WEEKLY"
+        interval  = 1
+      }
     }
   }
 }
+
 
 # -------------------------
 # Flow modules to deploy
