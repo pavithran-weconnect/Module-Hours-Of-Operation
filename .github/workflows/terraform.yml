@@ -61,7 +61,6 @@ jobs:
         working-directory: ${{ env.TF_DIR }}
         run: terraform apply -auto-approve tfplan
 
-      # ✅ NEW (safe): creates/updates overrides via AWS Connect API, after HOO exists
       - name: Apply Hours of Operation Overrides (dev branch only)
         if: github.ref == 'refs/heads/dev'
         working-directory: ${{ env.TF_DIR }}
@@ -69,11 +68,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # These outputs must exist in your env main.tf
           export INSTANCE_ID="$(terraform output -raw connect_instance_id)"
           export HOO_ID="$(terraform output -raw hours_of_operation_id)"
 
-          # This output must exist (jsonencode(var.hours_of_operation_overrides))
           terraform output -raw overrides_json > overrides.json
 
-          python3 ../../.github/scripts/apply_connect_overrides.py overrides.json
+          # ✅ FIXED PATH (three levels up to repo root)
+          python3 ../../../.github/scripts/apply_connect_overrides.py overrides.json
