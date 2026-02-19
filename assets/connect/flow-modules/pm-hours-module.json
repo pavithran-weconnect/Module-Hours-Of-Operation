@@ -49,7 +49,7 @@
     {
       "Identifier": "CheckHoursOfOperation",
       "Parameters": {
-        "HoursOfOperationId": "${hours_of_operation_arn}",
+        "HoursOfOperationId": "${hours_of_operation_id}",
         "CheckOverride": "True"
       },
       "Transitions": {

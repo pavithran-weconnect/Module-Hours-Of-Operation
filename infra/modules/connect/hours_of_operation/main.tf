@@ -12,39 +12,46 @@ locals {
   ]
 
   overrides = [
-    for ov_name, ov in var.overrides : {
-      override_name        = ov_name
-      override_description = try(ov.override_description, null)
-      override_type        = upper(ov.override_type)
+    for ov_name in sort(keys(var.overrides)) : (
+      {
+        override_name        = ov_name
+        override_description = try(var.overrides[ov_name].override_description, null)
+        override_type        = upper(var.overrides[ov_name].override_type)
 
-      effective_from = ov.effective_from
-      effective_till = ov.effective_till
+        effective_from = var.overrides[ov_name].effective_from
+        effective_till = var.overrides[ov_name].effective_till
 
-      # CRITICAL: Cloud Control requires OverrideConfig key to exist.
-      # Always send [] when not provided.
-      override_config = [
-        for oc in try(ov.override_config, []) : {
-          day = oc.day
-          start_time = { hours = oc.start_hours, minutes = oc.start_minutes }
-          end_time   = { hours = oc.end_hours,   minutes = oc.end_minutes }
-        }
-      ]
-
-      # Optional recurrence
-      recurrence_config = (
-        try(ov.recurrence, null) == null
-        ? null
-        : {
-            recurrence_pattern = {
-              frequency             = upper(ov.recurrence.frequency)
-              interval              = try(ov.recurrence.interval, 1)
-              by_month              = try(ov.recurrence.by_month, null)
-              by_month_day          = try(ov.recurrence.by_month_day, null)
-              by_weekday_occurrence = try(ov.recurrence.by_weekday_occurrence, null)
-            }
+        override_config = [
+          for oc in var.overrides[ov_name].override_config : {
+            day = oc.day
+            start_time = { hours = oc.start_hours, minutes = oc.start_minutes }
+            end_time   = { hours = oc.end_hours,   minutes = oc.end_minutes }
           }
-      )
-    }
+        ]
+
+        recurrence_config = (
+          try(var.overrides[ov_name].recurrence, null) == null
+          ? null
+          : {
+              recurrence_pattern = merge(
+                {
+                  frequency = upper(var.overrides[ov_name].recurrence.frequency)
+                  interval  = try(var.overrides[ov_name].recurrence.interval, 1)
+                },
+                try(var.overrides[ov_name].recurrence.by_month, null) == null
+                  ? {}
+                  : { by_month = var.overrides[ov_name].recurrence.by_month },
+                try(var.overrides[ov_name].recurrence.by_month_day, null) == null
+                  ? {}
+                  : { by_month_day = var.overrides[ov_name].recurrence.by_month_day },
+                try(var.overrides[ov_name].recurrence.by_weekday_occurrence, null) == null
+                  ? {}
+                  : { by_weekday_occurrence = var.overrides[ov_name].recurrence.by_weekday_occurrence }
+              )
+            }
+        )
+      }
+    )
   ]
 }
 
