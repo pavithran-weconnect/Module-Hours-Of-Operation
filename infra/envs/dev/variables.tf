@@ -105,12 +105,12 @@ variable "hours_of_operation_overrides" {
       ]
     }
 
-    # 3) OPENED (open on Saturday 10:00-14:00 during June)
+    # 3) OPEN (open on Saturday 10:00-14:00 during June)
     "Campaign Saturday Opening" = {
       override_description = "Open Saturday for campaign"
       effective_from       = "2026-06-01"
       effective_till       = "2026-06-30"
-      override_type        = "OPENED"
+      override_type        = "OPEN"
       override_config = [
         { day = "SATURDAY", start_hours = 10, start_minutes = 0, end_hours = 14, end_minutes = 0 }
       ]

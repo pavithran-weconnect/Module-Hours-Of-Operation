@@ -82,7 +82,7 @@ variable "overrides" {
       length(k) >= 1
       && can(regex("^\\d{4}-\\d{2}-\\d{2}$", ov.effective_from))
       && can(regex("^\\d{4}-\\d{2}-\\d{2}$", ov.effective_till))
-      && contains(["CLOSED","OPENED"], upper(ov.override_type))
+      && contains(["CLOSED","OPEN"], upper(ov.override_type))
     ])
     error_message = "overrides: effective_from/effective_till must be YYYY-MM-DD and override_type must be CLOSED or OPENED."
   }
