@@ -44,10 +44,6 @@ jobs:
             echo "TF_DIR=infra/envs/dev" >> "$GITHUB_ENV"
           fi
 
-      - name: Show selected directory
-        shell: bash
-        run: echo "Using TF_DIR=${{ env.TF_DIR }}"
-
       - name: Terraform Init
         working-directory: ${{ env.TF_DIR }}
         run: terraform init
@@ -60,14 +56,24 @@ jobs:
         working-directory: ${{ env.TF_DIR }}
         run: terraform plan -out=tfplan
 
-      # Optional: store the plan file as an artifact so you can download it from Actions
-      - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ github.ref_name }}
-          path: ${{ env.TF_DIR }}/tfplan
-
       - name: Terraform Apply (dev branch only)
         if: github.ref == 'refs/heads/dev'
         working-directory: ${{ env.TF_DIR }}
         run: terraform apply -auto-approve tfplan
+
+      # ✅ NEW (safe): creates/updates overrides via AWS Connect API, after HOO exists
+      - name: Apply Hours of Operation Overrides (dev branch only)
+        if: github.ref == 'refs/heads/dev'
+        working-directory: ${{ env.TF_DIR }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # These outputs must exist in your env main.tf
+          export INSTANCE_ID="$(terraform output -raw connect_instance_id)"
+          export HOO_ID="$(terraform output -raw hours_of_operation_id)"
+
+          # This output must exist (jsonencode(var.hours_of_operation_overrides))
+          terraform output -raw overrides_json > overrides.json
+
+          python3 ../../.github/scripts/apply_connect_overrides.py overrides.json
