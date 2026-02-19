@@ -56,13 +56,13 @@ variable "overrides" {
 
     override_type = string
 
-    override_config = optional(list(object({
+   override_config = list(object({
       day           = string
       start_hours   = number
       start_minutes = number
       end_hours     = number
       end_minutes   = number
-    })))
+    }))
 
     # Optional recurrence support
     recurrence = optional(object({
