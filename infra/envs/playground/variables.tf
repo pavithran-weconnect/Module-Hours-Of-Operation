@@ -1,9 +1,3 @@
-variable "environment" {
-  type        = string
-  description = "Environment name"
-  default     = "playground"
-}
-
 variable "aws_region" {
   type        = string
   description = "AWS region"
@@ -18,11 +12,11 @@ variable "connect_instance_alias" {
 
 variable "tags" {
   type        = map(string)
-  description = "Default tags applied to all resources (provider default_tags + AWSCC tags in module)"
+  description = "Tags"
   default = {
     Project     = "Module-Hours-Of-Operation"
     ManagedBy   = "Terraform"
-    Environment = "playground"
+    Environment = "dev"
   }
 }
 
@@ -40,10 +34,9 @@ variable "hours_of_operation" {
     }))
   })
 
-  description = "Hours of Operation definition"
   default = {
     name        = "PM Hours"
-    description = "PM hours - playground plan only"
+    description = "PM hours - managed by Terraform"
     time_zone   = "Europe/London"
     config = [
       { day = "MONDAY",    start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
@@ -55,21 +48,25 @@ variable "hours_of_operation" {
   }
 }
 
+# Overrides are NOT created by Terraform resource (awscc update is flaky).
+# We manage overrides using AWS CLI in pipeline.
 variable "hours_of_operation_overrides" {
   type = map(object({
-    override_description = optional(string)
-    effective_from       = string
-    effective_till       = string
-    override_type        = string
+    description    = optional(string)
+    effective_from = string # YYYY-MM-DD (Connect expects date-only)
+    effective_till = string # YYYY-MM-DD
+    override_type  = string # "OPEN" or "CLOSED"
 
-    override_config = optional(list(object({
+    # must be non-empty for Connect/CloudControl-like validation; we enforce it here
+    override_config = list(object({
       day           = string
       start_hours   = number
       start_minutes = number
       end_hours     = number
       end_minutes   = number
-    })))
+    }))
 
+    # Optional recurrence (passed to CLI)
     recurrence = optional(object({
       frequency             = string
       interval              = optional(number)
@@ -79,48 +76,5 @@ variable "hours_of_operation_overrides" {
     }))
   }))
 
-  description = "Overrides examples for playground"
-  default = {
-    "Weekly Recurring Closed Window" = {
-      override_description = "Recurring closed window 09:00-17:00 weekly"
-      effective_from       = "2026-01-01"
-      effective_till       = "2026-12-31"
-      override_type        = "CLOSED"
-      override_config = [
-        { day = "MONDAY",  start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 },
-        { day = "TUESDAY", start_hours = 9, start_minutes = 0, end_hours = 17, end_minutes = 0 }
-      ]
-      recurrence = {
-        frequency = "WEEKLY"
-        interval  = 1
-      }
-    }
-
-    "Maintenance Window" = {
-      override_description = "Closed - Maintenance"
-      effective_from       = "2026-02-16"
-      effective_till       = "2026-02-20"
-      override_type        = "CLOSED"
-      override_config      = []
-    }
-  }
-}
-
-variable "flow_modules" {
-  type = map(object({
-    name        = string
-    description = string
-    file_path   = string
-    hoo_key     = string
-  }))
-
-  description = "Flow modules map (+ hoo_key)"
-  default = {
-    pm_hours_module = {
-      name        = "PM Hours Module"
-      description = "PM Hours module - playground plan only"
-      file_path   = "../../../assets/connect/flow-modules/pm-hours-module.json"
-      hoo_key     = "pm_hours"
-    }
-  }
+  default = {}
 }
